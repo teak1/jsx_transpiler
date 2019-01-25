@@ -95,10 +95,22 @@ class JSXString {
     }
     build(vnm) {
         let vn = `_${(vnm++).toString(36)}`;
+        let func = `let ${vn} = document.createTextNode(\`${this.text}\`);`;
+        if (this.text.match(/\${.+?}/g)) {
+            let parts = [];
+            this.text.split("${").forEach(seg => {
+                let segs = seg.split("}");
+                let last = segs.pop();
+                let code = segs.join("}");
+                code.length && parts.push(code);
+                last.length && parts.push(`"${last}"`);
+            });
+            func = `let ${vn} = document.createElement("span");[${parts.join()}].forEach(I=>${vn}.appendChild(I.nodeName==undefined?document.createTextNode(""+I):I));`;
+        }
         return {
             vnm,
             vn,
-            func: `let ${vn} = document.createTextNode(\`${this.text}\`);`
+            func
         };
     }
 }

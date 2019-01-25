@@ -30,3 +30,10 @@ function test4() {
         <div id="test" />
     </div>);
 }
+
+export default {
+    test,
+    test2,
+    test3,
+    test4
+}

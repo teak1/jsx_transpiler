@@ -50,3 +50,10 @@ function test4() {
         return _0;
     })());
 }
+
+export default {
+    test,
+    test2,
+    test3,
+    test4
+}
