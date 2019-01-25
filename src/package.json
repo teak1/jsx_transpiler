@@ -1,0 +1,11 @@
+{
+  "name": "jsx",
+  "version": "1.0.0",
+  "description": "compile jsx files to es6",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Ian Senne",
+  "license": "ISC"
+}
