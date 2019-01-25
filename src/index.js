@@ -105,7 +105,7 @@ class JSXString {
                 code.length && parts.push(code);
                 last.length && parts.push(`"${last}"`);
             });
-            func = `let ${vn} = document.createElement("span");[${parts.join()}].forEach(I=>${vn}.appendChild(I.nodeName==undefined?document.createTextNode(""+I):I));`;
+            func = `let ${vn} = document.createElement("span");[${parts.join()}].forEach(I=>${vn}.appendChild(!I || I.nodeName==undefined?document.createTextNode(""+I):I));`;
         }
         return {
             vnm,
