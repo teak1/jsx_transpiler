@@ -5,22 +5,22 @@ function test(id) {
             a
         </p>
         <p>
-            The time is currently ${new Date()}
+            The time is currently {new Date()}
         </p>
-        <div id="${id}" hidden />
+        <div id={id} />
     </div>);
 }
 
 function test1() {
     return (<span>
-        ${new Date().getTime()}
+        {new Date().getTime()}
     </span>);
 }
 function test2() {
     return (
-        <span>
-            the time was ${test1()} when you ran test2
-        </span>
+        < >
+            the time was {test1()} when you ran test2
+        </>
     );
 }
 console.log(all);

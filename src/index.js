@@ -96,9 +96,9 @@ class JSXString {
     build(vnm) {
         let vn = `_${(vnm++).toString(36)}`;
         let func = `let ${vn} = document.createTextNode(\`${this.text}\`);`;
-        if (this.text.match(/\${.+?}/g)) {
+        if (this.text.match(/{.+?}/g)) {
             let parts = [];
-            this.text.split("${").forEach(seg => {
+            this.text.split("{").forEach(seg => {
                 let segs = seg.split("}");
                 let last = segs.pop();
                 let code = segs.join("}");
