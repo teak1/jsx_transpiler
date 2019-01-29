@@ -23,6 +23,7 @@ function test2() {
         </span>
     );
 }
+let a = [];
 console.log(all);
 
 export default window.exports = {

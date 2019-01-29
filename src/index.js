@@ -1,119 +1,18 @@
-class Element {
-    constructor(type, attribute_list) {
-        this.type = type;
-        this.attribute_list = attribute_list || [];
-    }
-}
-class JSXElement {
-    constructor({
-        openingElement,
-        closingElement,
-        Children = [],
-        SelfClosing,
-        AttributeList = []
-    }) {
-        this.isSelfClosing = SelfClosing;
-        this.openingElement = openingElement;
-        this.closingElement = closingElement;
-        this.children = Children;
-        this.attributes = AttributeList;
-    }
-    build(vnm = 0) {
-        let is_root = vnm == 0;
-        let func = is_root ? `(function(){` : ``;
-        let vn = `_${(vnm++).toString(36)}`;
-        func += `let ${vn} = document.createElement("${this.openingElement}");`;
-        if (this.attributes.length > 0) {
-            for (let i = 0; i < this.attributes.length; i++) {
-                func += this.attributes[i].get(vn);
-            }
-        }
-        if (this.children.length > 0) {
-            for (let i = 0; i < this.children.length; i++) {
-                if (!this.children[i].build) console.log(this.children[i].constructor);
-                let child = this.children[i].build(vnm);
-                vnm = child.vnm;
-                func += child.func;
-                func += `${vn}.appendChild(${child.vn});`;
-            }
-        }
-        if (is_root) return func + `return ${vn};})()`;
-        return {
-            func,
-            vn,
-            vnm
-        };
-    }
-}
-class JSXSelfClosingElement extends JSXElement {
-    constructor({
-        openingElement,
-        AttributeList
-    }) {
-        super({
-            openingElement,
-            AttributeList,
-            SelfClosing: true
-        });
-    }
-} //< JSXElementName JSXAttributes(opt) / >
-class JSXOpeningElement {
-    constructor({
-        ElementName,
-        AttributeList
-    }) {
-        this.ElementName = ElementName;
-        this.attributes = AttributeList;
-    }
-} //< JSXElementName JSXAttributes(opt) / >
-class JSXClosingElement {
-    constructor({
-        ElementName,
-        AttributeList
-    }) {
-        this.ElementName = ElementName;
-        this.attributes = AttributeList;
-    }
-} //< / JSXElementName >
-class JSXAttribute {
-    constructor({
-        Name,
-        Value
-    }) {
-        this.name = Name;
-        this.Value = Value;
-    }
-    get(vn) {
-        return `${vn}.setAttribute("${this.name}"${this.Value ? ",`" + this.Value.substr(1,this.Value.length-2)+"`" : ""});`;
-    }
-}
-class JSXString {
-    constructor({
-        Text
-    }) {
-        this.text = Text;
-    }
-    build(vnm) {
-        let vn = `_${(vnm++).toString(36)}`;
-        let func = `let ${vn} = document.createTextNode(\`${this.text}\`);`;
-        if (this.text.match(/{.+?}/g)) {
-            let parts = [];
-            this.text.split("{").forEach(seg => {
-                let segs = seg.split("}");
-                let last = segs.pop();
-                let code = segs.join("}");
-                code.length && parts.push(code);
-                last.length && parts.push(`"${last}"`);
-            });
-            func = `let ${vn} = document.createElement("span");[${parts.join()}].forEach(I=>${vn}.appendChild(!I || I.nodeName==undefined?document.createTextNode(""+I):I));`;
-        }
-        return {
-            vnm,
-            vn,
-            func
-        };
-    }
-}
+/**
+ * @typedef JSXStringLocation_args
+ * @property {Number} Start - an Integer value to determine where in the string the start of the JSX expression is located at.
+ * @property {Number} Stop - an Integer value to determine where in the string the end of the JSX expression is located at.
+ * @property {String} JSXString - the jsx expression as a string.
+ * @property {String} FilePath - the file path that the JSX expression was found in.
+ * @property {Locations} Array - contains Array<Number> the start and stop points of all other JSX expressions in the file.
+ */
+
+
+/**
+ * @param {JSXStringLocation_args}
+ *
+ * @class JSXStringLocation
+ */
 class JSXStringLocation {
     constructor({
         Start,
@@ -159,11 +58,19 @@ const default_config = {
     "outdir": "../build",
     "target_dir": "./"
 };
-
+/**
+ *
+ *
+ * @param {*} error
+ */
 function sendError(error) {
     exitError(`${error.message}\n${error.stack.replace(/\n/g, "\n\t")}`);
 }
-
+/**
+ *
+ *
+ * @param {*} error
+ */
 function exitError(error) {
     console.log(`${col.FgCyan}An Error has occured, process exiting${col.FgRed}\n\t${error.replace(/\n/g, "\n\t")}${col.FgWhite}`);
     process.exit(1);
@@ -200,6 +107,7 @@ if (!fs.existsSync(path.resolve(args.base, config.start_file))) {
 }
 let files = {};
 let loaded_files = [];
+//wrap async around loadfile so can await.
 async function _run() {
     findJSXExpressionInString(await load_file(args.base, config.start_file));
 }
@@ -236,7 +144,6 @@ function findJSXExpressionInString(data) {
     let string = data.text;
     let FilePath = data.FilePath;
     console.log(`${col.FgGreen}[${col.FgCyan}LOG${col.FgGreen}] ${col.FgCyan}parsing file "${col.FgWhite}${data.FilePath}${col.FgCyan}"${col.FgWhite}`);
-    // console.log(`looking for JSX string in ${string}`);
     let potential_start_location = -1;
     let potential_end_location = -1;
     let in_string = null;
@@ -264,7 +171,6 @@ function findJSXExpressionInString(data) {
                 let shortened = tag.replace(/\s/g, "");
                 if (taglist.length == 0) JSXStringStart = i - string.substr(potential_start_location, potential_end_location - potential_start_location).length + 1;
                 if (shortened[1] == "/") {
-
                     Locations.push([potential_start_location - JSXStringStart, potential_end_location - JSXStringStart - 1]);
                     taglist.pop();
                     if (taglist.length === 0) {
@@ -281,7 +187,6 @@ function findJSXExpressionInString(data) {
                         Locations = [];
                     }
                 } else if (shortened[shortened.length - 2] == "/") {
-
                     Locations.push([potential_start_location - JSXStringStart, potential_end_location - JSXStringStart]);
                     if (taglist.length === 0) {
                         let End = i + 1;
@@ -328,29 +233,6 @@ function makePath(pth) {
 }
 
 function parseJSXExpression(JSXstring) {
-    let letters = JSXstring.string.split("");
-    let parts = [];
-    let part = "";
-    for (let i = 0; i < letters.length; i++) {
-        if (JSXstring.tagLocations[0]) {
-            if (JSXstring.tagLocations[0][0] == i && part != "") {
-                let text = part.replace(/[\n\r]/g, "").replace(/\s\s/g, "").trim();
-                if (text != "") parts.push(text);
-                part = "";
-            }
-            part += letters[i];
-            if (i == JSXstring.tagLocations[0][1]) {
-                JSXstring.tagLocations.shift();
-                parts.push(part);
-                part = "";
-            }
-        }
-    }
-    if (part != "") parts.push(part);
-    parts = parts.map(parseElement);
-    let elements = findMatchedElement(parts);
-    let element = buildElements(elements);
-    let built = element.build();
     let JSDom = new jsdom.JSDOM(JSXstring.string, {
         "runScripts": "dangerously"
     });
@@ -358,127 +240,4 @@ function parseJSXExpression(JSXstring) {
     JSDom.window.eval(inject.toString());
     JSDom.window.eval("window.output = _JSX({element:document.body.children[0]});");
     JSXstring.setFunc(`((function(){${JSDom.window.output}})())`);
-}
-
-function findMatchedElement(array) {
-    if (array[0].isSelfClosing || array[0].text) return {
-        first: array.shift()
-    };
-    let elements = [],
-        first = array.shift(),
-        between = [],
-        last = null;
-    elements.push(first);
-    while (array.length > 0) {
-        let element = array.shift();
-        between.push(element);
-        let isStart = element.openingElement ? true : false;
-        if (element.text || element.isSelfClosing) {} else if (isStart) {
-            elements.push(element);
-        } else {
-            if (elements[elements.length - 1].openingElement == element.closingElement) {
-                elements.pop();
-            }
-        }
-        if (elements.length == 0) {
-            last = between.pop();
-            return {
-                first,
-                between,
-                last
-            };
-        }
-    }
-    return {
-        first,
-        between,
-        last: between.pop()
-    };
-}
-
-function parseElement(element) {
-    if (element[0] != "<" && element[element.length - 1] != ">") {
-        return new JSXString({
-            Text: element
-        });
-    }
-    let string = element.substr(1, element.length - 2);
-    let in_string = null;
-    let segments = [];
-    let segment = 0;
-    for (let i = 0; i < string.length; i++) {
-        let char = string[i];
-        if (char == in_string && string[i - 1] != "\\") {
-            in_string = null;
-            continue;
-        }
-        if ((char == "`" || char == "'" || char == "\"") && (in_string != char && string[i - 1] != "\\")) {
-            in_string = char;
-            continue;
-        }
-        if (in_string) continue;
-        if (char == " ") {
-            segments.push(string.substr(segment, i - segment).trim());
-            segment = i;
-        }
-    }
-    segments.push(string.substr(segment, string.length - segment).trim());
-    let name = segments.shift();
-    let AttributeList = [];
-    let isSingleElement = false;
-    for (let segment of segments) {
-        if (segments == "/") {
-            isSingleElement = true;
-            continue;
-        }
-        let seg_name = segment.split("=", 2)[0];
-        let value = segment.split("=", 2)[1];
-        let Attribute = new JSXAttribute({
-            Name: seg_name.replace(/[^a-zA-Z0-9_]/g, ""),
-            Value: value || `"true"`
-        });
-        if (seg_name != "/" && seg_name != "/>") AttributeList.push(Attribute);
-    }
-    let elt = null;
-    if (name[0] == "/" || name == "/>") {
-        if (isSingleElement) {
-            elt = new JSXElement({
-                closingElement: name.substr(1),
-                SelfClosing: true,
-                AttributeList
-            });
-        } else {
-            elt = new JSXElement({
-                closingElement: name.substr(1),
-                AttributeList,
-                Children: []
-            })
-        }
-    } else {
-        if (isSingleElement) {
-            elt = new JSXElement({
-                openingElement: name,
-                SelfClosing: true,
-                AttributeList
-            });
-        } else {
-            elt = new JSXElement({
-                openingElement: name,
-                AttributeList,
-                Children: []
-            })
-        }
-    }
-    return elt;
-}
-
-function buildElements(elements) {
-    if (!elements.between) return elements.first;
-    if (elements.between.length == 0) return elements.first;
-    while (elements.between.length > 0) {
-        let matched = findMatchedElement(elements.between);
-        let element = buildElements(matched);
-        elements.first.children.push(element);
-    }
-    return elements.first;
 }
