@@ -96,9 +96,9 @@ class JSXString {
     build(vnm) {
         let vn = `_${(vnm++).toString(36)}`;
         let func = `let ${vn} = document.createTextNode(\`${this.text}\`);`;
-        if (this.text.match(/\${.+?}/g)) {
+        if (this.text.match(/{.+?}/g)) {
             let parts = [];
-            this.text.split("${").forEach(seg => {
+            this.text.split("{").forEach(seg => {
                 let segs = seg.split("}");
                 let last = segs.pop();
                 let code = segs.join("}");
@@ -146,6 +146,7 @@ for (let item of process.argv) {
         args._unknown.push(item);
     }
 }
+const jsdom = require("jsdom");
 const fs = require("fs");
 const path = require("path");
 const col = require("./col.js");
@@ -315,8 +316,7 @@ function findJSXExpressionInString(data) {
     let file_path = path.relative(working_dir, FilePath);
     let target_path = path.resolve(write_dir, file_path);
     makePath(path.resolve(target_path, ".."));
-    console.log(`${col.FgGreen}[${col.FgCyan}LOG${col.FgGreen}] ${col.FgCyan}writing file "${col.FgWhite}${target_path.replace(".jsx", ".js")}${col.FgCyan}"${col.FgWhite}`);
-    fs.writeFileSync(target_path.replace(/\.jsx/g, ".js"), file);
+    fs.writeFileSync(target_path.replace(/\.jsx/g, ".js"), "/*JSX injection*/\n" + fs.readFileSync(path.resolve(__dirname, "./jsx.js")).toString().replace(/[\n\r]/g, "").replace(/\s\s/g, "") + "\n/*begin user file*/\n" + file);
 }
 
 function makePath(pth) {
@@ -331,7 +331,6 @@ function parseJSXExpression(JSXstring) {
     let letters = JSXstring.string.split("");
     let parts = [];
     let part = "";
-    let JSXElem = null;
     for (let i = 0; i < letters.length; i++) {
         if (JSXstring.tagLocations[0]) {
             if (JSXstring.tagLocations[0][0] == i && part != "") {
@@ -352,7 +351,13 @@ function parseJSXExpression(JSXstring) {
     let elements = findMatchedElement(parts);
     let element = buildElements(elements);
     let built = element.build();
-    JSXstring.setFunc(built);
+    let JSDom = new jsdom.JSDOM(JSXstring.string, {
+        "runScripts": "dangerously"
+    });
+    let inject = fs.readFileSync(path.resolve(__dirname, "./embed.js"));
+    JSDom.window.eval(inject.toString());
+    JSDom.window.eval("window.output = _JSX({element:document.body.children[0]});");
+    JSXstring.setFunc(`((function(){${JSDom.window.output}})())`);
 }
 
 function findMatchedElement(array) {

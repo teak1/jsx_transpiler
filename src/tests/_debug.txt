@@ -1,0 +1,52 @@
+<div name="test">
+        <p class="test2">
+            a
+        </p>
+        <p>
+            The time is currently {new Date()}
+        </p>
+        <div id={id} />
+    </div>
+
+
+<span>
+        {new Date().getTime()}
+    </span>
+
+
+< >
+            the time was {test1()} when you ran test2
+        </>
+
+
+<div />
+
+
+<div>
+        <p>
+            hi!
+        </p>
+    </div>
+
+
+<div>
+        <p>
+            a
+        </p>
+        <p>
+            b
+        </p>
+    </div>
+
+
+<div name="test">
+        <p class="test2">
+            a
+        </p>
+        <p>
+            b
+        </p>
+        <div id="test" />
+    </div>
+
+
