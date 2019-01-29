@@ -11,4 +11,8 @@
   "dependencies": {
     "jsdom": "^13.2.0"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 993d10bad714cf205d213262cef397bd649ff9ae
