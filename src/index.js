@@ -4,7 +4,7 @@
  * @property {Number} Stop - an Integer value to determine where in the string the end of the JSX expression is located at.
  * @property {String} JSXString - the jsx expression as a string.
  * @property {String} FilePath - the file path that the JSX expression was found in.
- * @property {Locations} Array - contains Array<Number> the start and stop points of all other JSX expressions in the file.
+ * @property {Locations} Array[Array[number]] - the start and stop points of all other JSX expressions in the file.
  */
 
 
