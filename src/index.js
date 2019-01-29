@@ -49,6 +49,8 @@ const jsdom = require("jsdom");
 const fs = require("fs");
 const path = require("path");
 const col = require("./col.js");
+let inject = fs.readFileSync(path.resolve(__dirname, "./embed.js"));
+let jsx_inject = fs.readFileSync(path.resolve(__dirname, "./jsx.js")).toString().replace(/[\n\r]/g, "").replace(/\s\s/g, "");
 let config = {
     "start_file": "./index.jsx",
     "outdir": "./build"
@@ -108,10 +110,10 @@ if (!fs.existsSync(path.resolve(args.base, config.start_file))) {
 let files = {};
 let loaded_files = [];
 //wrap async around loadfile so can await.
-async function _run() {
-    findJSXExpressionInString(await load_file(args.base, config.start_file));
+async function _run(base, file) {
+    findJSXExpressionInString(await load_file(base, file));
 }
-_run();
+_run(args.base, config.start_file);
 async function load_file(basePath, fileName) {
     let location = path.resolve(basePath, fileName);
     if (loaded_files.includes(location)) return new Promise((resolve) => {
@@ -125,11 +127,11 @@ async function load_file(basePath, fileName) {
             files[location] = data.toString();
             let lines = data.toString().split("\n");
             lines.forEach(async line => {
-                let result = line.match(/from\s"(.+?)"/);
+                let result = line.match(/import.+?from\s"(.+?)"/);
                 if (result) {
                     console.log(`${col.FgGreen}[${col.FgCyan}LOG${col.FgGreen}] ${col.FgCyan}found import "${col.FgWhite}${result[1]}${col.FgCyan}"${col.FgWhite}`);
                     files[location] = files[location].replace(result[0], result[0].replace(".jsx", ".js"));
-                    findJSXExpressionInString(await load_file(path.resolve(location, ".."), result[1]));
+                    _run(path.resolve(location, ".."), result[1]);
                 }
             });
             resolve({
@@ -221,7 +223,7 @@ function findJSXExpressionInString(data) {
     let file_path = path.relative(working_dir, FilePath);
     let target_path = path.resolve(write_dir, file_path);
     makePath(path.resolve(target_path, ".."));
-    fs.writeFileSync(target_path.replace(/\.jsx/g, ".js"), "/*JSX injection*/\n" + fs.readFileSync(path.resolve(__dirname, "./jsx.js")).toString().replace(/[\n\r]/g, "").replace(/\s\s/g, "") + "\n/*begin user file*/\n" + file);
+    fs.writeFileSync(target_path.replace(/\.jsx/g, ".js"), "/*JSX injection*/\n" + jsx_inject + "\n/*begin user file*/\n" + file);
 }
 
 function makePath(pth) {
@@ -236,7 +238,6 @@ function parseJSXExpression(JSXstring) {
     let JSDom = new jsdom.JSDOM(JSXstring.string, {
         "runScripts": "dangerously"
     });
-    let inject = fs.readFileSync(path.resolve(__dirname, "./embed.js"));
     JSDom.window.eval(inject.toString());
     JSDom.window.eval("window.output = _JSX({element:document.body.children[0]});");
     JSXstring.setFunc(`((function(){${JSDom.window.output}})())`);
