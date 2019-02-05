@@ -138,14 +138,14 @@ function findJSXExpressionInString(string) {
 
 function search(obj, target, path = ["root"]) {
     let results = [];
-    if (obj === undefined) return [];
+    if (obj == undefined || obj == null) return [];
     // console.log(obj, Object.keys(obj));
     for (let key of Object.keys(obj)) {
         //console.log(typeof obj[key])
         // if (obj[key] == undefined) continue;
         // if (obj[key].constructor != Object && obj[key].constructor != Array) continue;
         // console.log(obj[key]);
-        if (obj[key].type == target) {
+        if (obj[key] !== null && obj[key].type == target) {
             results.push(obj[key]);
         } else {
             // console.log("deeper", obj[key]);

@@ -1,4 +1,4 @@
 {
-    "start_file": "test_loader.jsx",
-    "outdir": "./build"
+    "start_file": "./src/index.jsx",
+    "outdir": "./built_tests"
 }

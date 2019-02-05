@@ -1,0 +1,4 @@
+{
+    "start_file": "./tests/src/index.jsx",
+    "outdir": "./tests/built_tests"
+}
