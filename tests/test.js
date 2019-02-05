@@ -9,8 +9,9 @@ let templates = {
 };
 (async () => {
     const browser = await puppeteer.launch({
-        headless: false,
-        args: ['--allow-file-access-from-files']
+        headless: true,
+        args: ['--allow-file-access-from-files'],
+        "devtools": true
     });
     const page = await browser.newPage();
     page.on('console', msg => {
@@ -18,9 +19,7 @@ let templates = {
         for (let i = 0; i < args.length; ++i)
             args[i].jsonValue().then(value => {
                 if (value.close) {
-                    // return;
                     return browser.close();
-
                 }
                 let _got = value.got;
                 let _expected = value.expected;
@@ -43,8 +42,10 @@ let templates = {
                     }
                     got += col.FgGreen;
                     expected += col.FgGreen;
+                } else {
+                    got = _got;
                 }
-                console.log(`${value.pass ? templates.pass : templates.fail} Test #${value.testNumber} ${!value.pass ? ` \n\t     GOT "${got}"\n\tEXPECTED "${expected}"` : ""}${col.FgWhite}`);
+                console.log(`${value.pass ? templates.pass : templates.fail} Test #${value.testNumber} \n\t     GOT "${got}" ${!value.pass ? `\n\tEXPECTED "${expected}"` : ""}${col.FgWhite}`);
             });
     });
     await page.goto('file://' + target);

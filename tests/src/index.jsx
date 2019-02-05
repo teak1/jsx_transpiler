@@ -1,3 +1,4 @@
+let rv = Math.random();
 let tests = [
     {
         expect: `<div></div>`,
@@ -15,6 +16,20 @@ let tests = [
         expect: `<div id="test"></div>`,
         from() {
             return (<div id="test"></div>);
+        }
+    },
+    {
+        expect: `<div id="test" style="background-color: red;"> hi, my background is red</div>`,
+        from() {
+            return (<div id="test" style={{
+                backgroundColor: "red"
+            }}> hi, my background is red</div>);
+        }
+    },
+    {
+        expect: `<div id="random">${rv}</div>`,
+        from() {
+            return (<div id="random">{rv}</div>);
         }
     }
 ];

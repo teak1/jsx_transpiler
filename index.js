@@ -173,9 +173,9 @@ function createJSXJS(JSXElement, vn, code, parentVn) {
                 }
                 return;
             }
-            let value = code.text.substr(atrb.value.range[0] + 1, atrb.value.range[1] - atrb.value.range[0] - 2);
+            let value = code.text[atrb.value.range[0]] == "{" ? code.text.substr(atrb.value.range[0] + 1, atrb.value.range[1] - atrb.value.range[0] - 2) : code.text.substr(atrb.value.range[0], atrb.value.range[1] - atrb.value.range[0]);
             let name = atrb.name.name;
-            result += `_JSX.attribute(${Vn},"${name}",${value.replace(/\s\s/g,"").replace(/\n/g,"").replace(/:\s/g,":")});\n`;
+            result += `_JSX.attribute(${Vn},"${name}",${value.replace(/\s\s/g, "").replace(/\n/g, "").replace(/:\s/g, ":")});\n`;
         });
     }
     if (!JSXElement.openingElement.selfClosing && JSXElement.children.length > 0) {
