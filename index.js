@@ -17,7 +17,6 @@ for (let item of process.argv) {
         args._unknown.push(item);
     }
 }
-console.log(args);
 let config = {
     "start_file": "./index.jsx",
     "outdir": "../build"
@@ -57,7 +56,7 @@ if (args.w || args.watch) {
             if (last_seen[filename] + 100 < now) {
                 let base = path.resolve(config.start_file, "..");
                 if (!new RegExp(path.resolve(base, config.outdir).replace(/\\/g, "\\\\")).test(path.resolve(watch_path, filename))) {
-                    console.log("Started Build At " + new Date());
+                    console.log(`${col.FgGreen}[${col.FgCyan}LOG${col.FgGreen}] ${col.FgCyan}Starting new Build at ${new Date()}${col.FgWhite}`);
                     files = {};
                     loaded_files = [];
                     _run(args.base, config.start_file);
